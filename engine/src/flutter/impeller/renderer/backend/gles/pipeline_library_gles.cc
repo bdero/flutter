@@ -215,8 +215,7 @@ std::shared_ptr<PipelineGLES> PipelineLibraryGLES::CreatePipeline(
       desc,          //
       has_cached_program
           ? std::move(cached_program)
-          : std::make_shared<UniqueHandleGLES>(UniqueHandleGLES::MakeUntracked(
-                reactor, HandleType::kProgram))));
+          : std::make_shared<UniqueHandleGLES>(reactor, HandleType::kProgram)));
 
   auto program = reactor->GetGLHandle(pipeline->GetProgramHandle());
 
