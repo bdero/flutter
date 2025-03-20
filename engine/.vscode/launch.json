@@ -1,0 +1,31 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Ulan Launcher (cppdbg)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/out/host_debug/ulan_launcher",
+      "args": [
+        "--sl=/Users/hellomik/test_projects/runtime_shaders/my_cool_renderer/build/shaderbundles/my_renderer.shaderbundle",
+        "--shader-bundle={\"SimpleVertex\":{\"type\":\"vertex\",\"file\":\"shaders1/simple.vert\"},\"SimpleFragment\":{\"type\":\"fragment\",\"file\":\"shaders1/simple.frag\"}}"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/src/out/host_debug",
+      "environment": [
+        {
+          "name": "DYLD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/src/out/host_debug"
+        }
+      ],
+      "sourceFileMap": {
+        "flutter": "${workspaceFolder}/src/flutter"
+      },
+      "externalConsole": false,
+      "MIMode": "lldb"
+    }
+  ]
+}
