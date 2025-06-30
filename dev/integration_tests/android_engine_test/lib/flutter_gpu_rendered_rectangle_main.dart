@@ -40,7 +40,7 @@ Float32List unlitUBO(Matrix4 mvp, vm.Vector4 color) {
 }
 
 gpu.RenderPipeline createUnlitRenderPipeline() {
-  final gpu.ShaderLibrary? library = gpu.ShaderLibrary.fromAsset('test.shaderbundle');
+  final gpu.ShaderLibrary? library =  gpu.ShaderLibrary.fromAsset('test.shaderbundle');
   assert(library != null);
   final gpu.Shader? vertex = library!['UnlitVertex'];
   assert(vertex != null);
