@@ -2405,6 +2405,16 @@ void Shell::SetGpuAvailability(GpuAvailability availability) {
   switch (availability) {
     case GpuAvailability::kAvailable:
       is_gpu_disabled_sync_switch_->SetSwitch(false);
+      // Schedule a frame after GPU becomes available. Frames produced
+      // while the GPU was unavailable are silently discarded by the
+      // rasterizer, so we need to kick a new frame to ensure the
+      // display is up to date.
+      task_runners_.GetUITaskRunner()->PostTask(
+          [engine = engine_->GetWeakPtr()] {
+            if (engine) {
+              engine->ScheduleFrame();
+            }
+          });
       return;
     case GpuAvailability::kFlushAndMakeUnavailable: {
       fml::AutoResetWaitableEvent latch;

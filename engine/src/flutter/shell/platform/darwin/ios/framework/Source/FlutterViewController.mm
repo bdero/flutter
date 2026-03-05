@@ -1069,6 +1069,14 @@ static UIView* GetViewOrPlaceholder(UIView* existing_view) {
 
 - (void)appOrSceneBecameActive {
   self.isKeyboardInOrTransitioningFromBackground = NO;
+  // Ensure GPU is re-enabled before recreating the surface. The engine
+  // normally enables the GPU in response to WillEnterForeground, but
+  // notification observer ordering is non-deterministic: the view
+  // controller's DidBecomeActive handler can fire before the engine's
+  // WillEnterForeground handler. Setting this here guarantees the GPU is
+  // available before we attempt to create a Metal surface and submit
+  // frames.
+  self.engine.isGpuDisabled = NO;
   if (_viewportMetrics.physical_width) {
     [self surfaceUpdated:YES];
   }

@@ -175,6 +175,7 @@ extern NSNotificationName const FlutterViewControllerWillDealloc;
 - (void)sceneWillDisconnect:(NSNotification*)notification API_AVAILABLE(ios(13.0));
 - (void)sceneDidEnterBackground:(NSNotification*)notification API_AVAILABLE(ios(13.0));
 - (void)sceneWillEnterForeground:(NSNotification*)notification API_AVAILABLE(ios(13.0));
+- (void)appOrSceneBecameActive;
 - (void)triggerTouchRateCorrectionIfNeeded:(NSSet*)touches;
 - (void)onAccessibilityStatusChanged:(NSNotification*)notification;
 @end
@@ -2052,6 +2053,33 @@ extern NSNotificationName const FlutterViewControllerWillDealloc;
                  });
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
   [mockBundle stopMocking];
+}
+
+// Regression test: when the view controller becomes active, it should ensure
+// the GPU is enabled before recreating the surface. This prevents a race where
+// the VC's DidBecomeActive fires before the engine's WillEnterForeground.
+- (void)testBecameActiveEnablesGpuBeforeSurfaceUpdate {
+  FlutterEngine* engine = [[FlutterEngine alloc] init];
+  [engine runWithEntrypoint:nil];
+  FlutterViewController* flutterViewController =
+      [[FlutterViewController alloc] initWithEngine:engine nibName:nil bundle:nil];
+  UIWindow* window = [[UIWindow alloc] init];
+  [window addSubview:flutterViewController.view];
+  flutterViewController.view.bounds = CGRectMake(0, 0, 100, 100);
+  [flutterViewController viewDidLayoutSubviews];
+
+  // Simulate backgrounding: GPU disabled, surface destroyed.
+  engine.isGpuDisabled = YES;
+  XCTAssertTrue(engine.isGpuDisabled);
+
+  // Simulate the race condition: VC receives DidBecomeActive WITHOUT
+  // the engine having received WillEnterForeground first.
+  [flutterViewController appOrSceneBecameActive];
+
+  // The fix ensures GPU is re-enabled by the VC before surface creation.
+  XCTAssertFalse(engine.isGpuDisabled);
+
+  [flutterViewController deregisterNotifications];
 }
 
 - (void)testLifeCycleNotificationApplicationWillResignActive {
