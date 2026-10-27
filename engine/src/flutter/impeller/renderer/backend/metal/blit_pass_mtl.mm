@@ -11,6 +11,7 @@
 #include <utility>
 #include <variant>
 
+#include "flutter/fml/build_config.h"
 #include "flutter/fml/closure.h"
 #include "flutter/fml/logging.h"
 #include "flutter/fml/trace_event.h"
@@ -176,6 +177,14 @@ bool BlitPassMTL::OnCopyTextureToBufferCommand(
              destinationOffset:destination_offset
         destinationBytesPerRow:destination_bytes_per_row
       destinationBytesPerImage:destination_bytes_per_image];
+
+#if !FML_OS_IOS
+  // The CPU only sees GPU writes to a managed buffer after a synchronize.
+  // Host visible buffers are managed on Macs without unified memory.
+  if (destination_mtl.storageMode == MTLStorageModeManaged) {
+    [encoder_ synchronizeResource:destination_mtl];
+  }
+#endif  // !FML_OS_IOS
 
 #ifdef IMPELLER_DEBUG
   if (is_metal_trace_active_) {
